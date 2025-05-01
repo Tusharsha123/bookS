@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const {
@@ -8,7 +10,32 @@ const Login = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = async (data) => {
+    console.log(data);
+    const userInfo = {
+      email: data.email,
+      password: data.password,
+    };
+
+    await axios
+      .post("http://localhost:3000/api/v1/user/lgnUsr", userInfo)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data) {
+          toast.success("Successfully login!");
+          document.getElementById("my_modal_3").close();
+          setTimeout(() => {
+            localStorage.setItem("Users", JSON.stringify(res.data.user));
+            window.location.reload();
+          }, 1000);
+        }
+      })
+      .catch((err) => {
+        console.log("err", err);
+        toast.error("This is an error! " + err.response.data.message);
+        setTimeout(() => {}, 1000);
+      });
+  };
 
   return (
     <div>
@@ -34,7 +61,7 @@ const Login = () => {
                 type="email"
                 placeholder="Enter your email"
                 className="w-80 px-3 border-rounded-md outline-none"
-                {...register("Email", {
+                {...register("email", {
                   required: true,
                   pattern: /^\S+@\S+$/i,
                 })}
